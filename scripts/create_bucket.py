@@ -46,33 +46,19 @@ def main():
         except Exception as e:
             print(f"Error creating bucket: {e}")
 
-    # Check if static web hosting is configured
-    is_website_configured = False
-    try:
-        s3.get_bucket_website(Bucket=config["s3_bucket"])
-        print(
-            f"Bucket {config['s3_bucket']} is already configured for website hosting."
-        )
-        is_website_configured = True
-    except Exception as e:
-        pass
-
     # Set website configuration
-    if not is_website_configured:
-        try:
-            s3.put_bucket_website(
-                Bucket=config["s3_bucket"],
-                WebsiteConfiguration={
-                    "ErrorDocument": {"Key": "index.html"},
-                    "IndexDocument": {"Suffix": "index.html"},
-                },
-            )
-            print(
-                f"Bucket {config['s3_bucket']} configured for website hosting."
-            )
-        except Exception as e:
-            print(f"Error configuring bucket {config['s3_bucket']}: {e}")
-            return
+    try:
+        s3.put_bucket_website(
+            Bucket=config["s3_bucket"],
+            WebsiteConfiguration={
+                "ErrorDocument": {"Key": "index.html"},
+                "IndexDocument": {"Suffix": "index.html"},
+            },
+        )
+        print(f"Bucket {config['s3_bucket']} configured for website hosting.")
+    except Exception as e:
+        print(f"Error configuring bucket {config['s3_bucket']}: {e}")
+        return
 
     # Set bucket policy
     try:
