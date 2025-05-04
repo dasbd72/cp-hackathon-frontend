@@ -57,3 +57,29 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Deployment
+
+Create configuration file for deployment, run:
+
+```bash
+python -m scripts.update_config
+```
+
+Create bucket for deployment, run:
+
+```bash
+python -m scripts.create_bucket
+```
+
+Upload files to bucket, run:
+
+```bash
+python -m scripts.upload_bucket
+```
+
+Or, build + upload files to bucket, run:
+
+```bash
+python -m scripts.script deploy
+```
