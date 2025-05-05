@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 
@@ -11,17 +12,16 @@ import { AuthData, AuthService } from '../auth/auth.service';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule],
+  imports: [FormsModule, CommonModule, RouterModule, MatIconModule],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
 export class NavbarComponent implements OnInit {
+  username = '';
   authData: AuthData = {
     isAuthenticated: false,
-    userData: null,
-    accessToken: '',
-    idToken: '',
     isLoading: true,
+    username: '',
   };
   userSettings: UserSettings = {
     email: '',
@@ -36,7 +36,7 @@ export class NavbarComponent implements OnInit {
   ) {}
 
   login() {
-    this.authService.login();
+    this.authService.login(this.username);
   }
 
   logout() {
@@ -88,7 +88,7 @@ export class NavbarComponent implements OnInit {
         tap((authData) => {
           this.authData = authData;
         }),
-        filter((authData) => authData.isAuthenticated && !!authData.accessToken),
+        filter((authData) => authData.isAuthenticated),
         switchMap(() =>
           this.userService.getUserSettings().pipe(
             tap((settings) => {

@@ -50,42 +50,45 @@ export class UserService {
     };
   }
 
-  private fetchUserSettings(idToken: string): Observable<UserSettings> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${idToken}`,
-    });
-    return this.http.get<any>(`${environment.apiBaseUrl}/user/settings`, { headers }).pipe(
-      map((data) => this.extractData(data)),
-      map((data) => this.convertToCamelCase(data)),
-      tap((settings) => this.userSettingsSubject.next(settings)),
-      catchError((error) => {
-        console.error('Failed to fetch settings:', error);
-        return of({
-          email: '',
-          username: '',
-        });
-      }),
-    );
+  private fetchUserSettings(username: string): Observable<UserSettings> {
+    const headers = new HttpHeaders();
+    return this.http
+      .get<any>(`${environment.apiBaseUrl}/user/settings?username=${username}`, { headers })
+      .pipe(
+        map((data) => this.extractData(data)),
+        map((data) => this.convertToCamelCase(data)),
+        tap((settings) => this.userSettingsSubject.next(settings)),
+        catchError((error) => {
+          console.error('Failed to fetch settings:', error);
+          return of({
+            email: '',
+            username: '',
+          });
+        }),
+      );
   }
 
   getUserSettings(): Observable<UserSettings> {
     return this.authService.authData$.pipe(
-      filter((authData) => authData.isAuthenticated && !!authData.idToken),
-      switchMap((authData) => this.fetchUserSettings(authData.idToken)),
+      filter((authData) => authData.isAuthenticated),
+      switchMap((authData) => this.fetchUserSettings(authData.username)),
     );
   }
 
   private updateUserSettingsRequest(
-    idToken: string,
+    username: string,
     userSettings: UserSettings,
   ): Observable<UserSettings> {
     const underscoredSettings = this.convertToUnderscoreCase(userSettings);
     const headers = new HttpHeaders({
-      Authorization: `Bearer ${idToken}`,
       'Content-Type': 'application/json',
     });
     return this.http
-      .put<any>(`${environment.apiBaseUrl}/user/settings`, underscoredSettings, { headers })
+      .put<any>(
+        `${environment.apiBaseUrl}/user/settings?username=${username}`,
+        underscoredSettings,
+        { headers },
+      )
       .pipe(
         map((data) => this.extractData(data)),
         map((data) => this.convertToCamelCase(data)),
@@ -99,8 +102,8 @@ export class UserService {
 
   updateUserSettings(userSettings: UserSettings): Observable<UserSettings> {
     return this.authService.authData$.pipe(
-      filter((authData) => authData.isAuthenticated && !!authData.idToken),
-      switchMap((authData) => this.updateUserSettingsRequest(authData.idToken, userSettings)),
+      filter((authData) => authData.isAuthenticated),
+      switchMap((authData) => this.updateUserSettingsRequest(authData.username, userSettings)),
     );
   }
 }
