@@ -1,9 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 
 import { catchError, filter, of, switchMap, tap } from 'rxjs';
+
+import { UserService, UserSettings } from '../api/user.service';
+import { AuthData, AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -12,9 +15,33 @@ import { catchError, filter, of, switchMap, tap } from 'rxjs';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
+  authData: AuthData = {
+    isAuthenticated: false,
+    userData: null,
+    accessToken: '',
+    idToken: '',
+    isLoading: true,
+  };
+  userSettings: UserSettings = {
+    email: '',
+    username: '',
+  };
   isUserDropdownOpen = false;
   isMobileMenuOpen = false; // Added for mobile menu
+
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+  ) {}
+
+  login() {
+    this.authService.login();
+  }
+
+  logout() {
+    this.authService.logout();
+  }
 
   toggleDropdown() {
     this.isUserDropdownOpen = !this.isUserDropdownOpen;
@@ -53,5 +80,29 @@ export class NavbarComponent {
     if (!clickedInsideMobileMenu) {
       this.isMobileMenuOpen = false;
     }
+  }
+
+  ngOnInit(): void {
+    this.authService.authData$
+      .pipe(
+        tap((authData) => {
+          this.authData = authData;
+        }),
+        filter((authData) => authData.isAuthenticated && !!authData.accessToken),
+        switchMap(() =>
+          this.userService.getUserSettings().pipe(
+            tap((settings) => {
+              if (settings) {
+                this.userSettings = settings;
+              }
+            }),
+            catchError((error) => {
+              console.error('Failed to load user settings:', error);
+              return of(null); // Return observable here
+            }),
+          ),
+        ),
+      )
+      .subscribe();
   }
 }

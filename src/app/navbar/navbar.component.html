@@ -21,12 +21,49 @@
   <!-- Desktop Menu Links (hidden on small screens) -->
   <nav class="hidden md:flex flex-nowrap items-center justify-end whitespace-nowrap space-x-4">
     <a
-      routerLink="/"
+      routerLink="/home"
       routerLinkActive="text-yellow-400 underline"
       class="py-2 hover:text-yellow-300 hover:cursor-pointer transition select-none"
     >
       Home
     </a>
+
+    <!-- Authentication -->
+    <a
+      *ngIf="!authData.isAuthenticated"
+      (click)="login()"
+      class="py-2 hover:text-yellow-300 hover:cursor-pointer transition select-none"
+    >
+      Login
+    </a>
+    <div *ngIf="authData.isAuthenticated" class="relative user-dropdown">
+      <a
+        (click)="toggleDropdown()"
+        class="py-2 hover:text-yellow-300 hover:cursor-pointer transition select-none"
+      >
+        <span class="hidden sm:inline">Hello, {{ userSettings.username }}</span>
+        <span class="inline sm:hidden">User</span>
+      </a>
+
+      <!-- Dropdown Menu -->
+      <div
+        *ngIf="isUserDropdownOpen"
+        class="absolute right-0 w-24 mt-2 origin-top-right bg-gray-800 rounded-md shadow-lg z-50"
+      >
+        <a
+          routerLink="/user/settings"
+          class="block px-3 py-2 text-white hover:bg-gray-700 select-none"
+        >
+          Settings
+        </a>
+        <a
+          (click)="logout()"
+          class="block text-left w-full px-3 py-2 text-white hover:bg-gray-700 hover:cursor-pointer rounded-b-md select-none"
+        >
+          Logout
+        </a>
+      </div>
+    </div>
 
     <a
       href="https://github.com/dasbd72/cp-hackathon-frontend"
@@ -56,15 +93,39 @@
   id="mobile-menu"
 >
   <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-    <!-- Force show announcement -->
     <a
-      routerLink="/"
+      routerLink="/home"
       routerLinkActive="bg-gray-900 text-yellow-400"
       (click)="closeMobileMenu()"
       class="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-yellow-300 hover:bg-gray-700"
     >
       Home
     </a>
+
+    <!-- Auth Links -->
+    <a
+      *ngIf="!authData.isAuthenticated"
+      (click)="login(); closeMobileMenu()"
+      class="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-yellow-300 hover:bg-gray-700 hover:cursor-pointer transition select-none"
+    >
+      Login
+    </a>
+    <div *ngIf="authData.isAuthenticated">
+      <a
+        routerLink="/user/settings"
+        routerLinkActive="bg-gray-900 text-yellow-400"
+        (click)="closeMobileMenu()"
+        class="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-yellow-300 hover:bg-gray-700"
+      >
+        Settings
+      </a>
+      <a
+        (click)="logout(); closeMobileMenu()"
+        class="block text-left w-full px-3 py-2 rounded-md text-base font-medium text-white hover:text-yellow-300 hover:bg-gray-700 hover:cursor-pointer select-none"
+      >
+        Logout
+      </a>
+    </div>
 
     <a
       href="https://github.com/dasbd72/leetcode-progress"
