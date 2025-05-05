@@ -1,9 +1,6 @@
 import json
 
-import boto3
-import boto3.session
-
-from .utils import read_confirm_config
+from .utils import get_boto3_session, read_confirm_config
 
 CONFIG_PATH = "scripts/config.json"
 
@@ -13,10 +10,7 @@ def main():
     if config is None:
         return
 
-    session = boto3.session.Session(
-        profile_name=config["aws_profile"],
-        region_name=config["aws_region"],
-    )
+    session = get_boto3_session(config)
     s3 = session.client("s3")
 
     # Check if the bucket already exists
