@@ -37,21 +37,8 @@ export class UserService {
 
   private extractUserSettingsData(obj: any): UserSettings {
     return {
-      ...obj.data,
-    };
-  }
-
-  private convertUserSettingsToCamelCase(obj: any): UserSettings {
-    return {
-      email: obj.email,
-      username: obj.username,
-    };
-  }
-
-  private convertUserSettingsToUnderscoreCase(settings: UserSettings): any {
-    return {
-      email: settings.email,
-      username: settings.username,
+      email: obj.data.email,
+      username: obj.data.username,
     };
   }
 
@@ -60,8 +47,7 @@ export class UserService {
     return this.http
       .get<any>(`${environment.apiBaseUrl}/user/settings?user_id=${userId}`, { headers })
       .pipe(
-        map((data) => this.extractUserSettingsData(data)),
-        map((data) => this.convertUserSettingsToCamelCase(data)),
+        map(this.extractUserSettingsData),
         tap((settings) => this.userSettingsSubject.next(settings)),
         catchError((error) => {
           console.error('Failed to fetch settings:', error);
@@ -84,7 +70,10 @@ export class UserService {
     idToken: string,
     userSettings: UserSettings,
   ): Observable<UserSettings> {
-    const underscoredSettings = this.convertUserSettingsToUnderscoreCase(userSettings);
+    const underscoredSettings = {
+      email: userSettings.email,
+      username: userSettings.username,
+    };
     const headers = new HttpHeaders({
       Authorization: `Bearer ${idToken}`,
       'Content-Type': 'application/json',
@@ -92,8 +81,7 @@ export class UserService {
     return this.http
       .put<any>(`${environment.apiBaseUrl}/user/settings`, underscoredSettings, { headers })
       .pipe(
-        map((data) => this.extractUserSettingsData(data)),
-        map((data) => this.convertUserSettingsToCamelCase(data)),
+        map(this.extractUserSettingsData),
         tap((settings) => this.userSettingsSubject.next(settings)),
         catchError((error) => {
           console.error('Failed to update settings:', error);
