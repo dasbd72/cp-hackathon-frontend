@@ -27,6 +27,13 @@
     >
       Home
     </a>
+    <a
+      routerLink="/music"
+      routerLinkActive="text-yellow-400 underline"
+      class="py-2 hover:text-yellow-300 hover:cursor-pointer transition select-none"
+    >
+      Music
+    </a>
 
     <!-- Authentication -->
     <a
@@ -103,6 +110,14 @@
       class="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-yellow-300 hover:bg-gray-700"
     >
       Home
+    </a>
+    <a
+      routerLink="/music"
+      routerLinkActive="bg-gray-900 text-yellow-400"
+      (click)="closeMobileMenu()"
+      class="block px-3 py-2 rounded-md text-base font-medium text-white hover:text-yellow-300 hover:bg-gray-700"
+    >
+      Music
     </a>
 
     <!-- Auth Links -->
