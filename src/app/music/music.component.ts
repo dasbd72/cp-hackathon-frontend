@@ -33,7 +33,7 @@ export class MusicComponent implements AfterViewInit {
     music: { musicId: '', title: '', s3Key: '', presignedUrl: '' },
     duration: 0,
     currentTime: 0,
-    volume: 1,
+    volume: 0.2,
   };
   userSettingsMusicId = '';
 
