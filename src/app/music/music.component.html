@@ -96,6 +96,13 @@
     >
       <div class="flex px-2 py-1 text-gray-700 mr-auto">{{ music.title }}</div>
       <div
+        (click)="onSetUserSettingsMusicId(music)"
+        class="flex px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:text-yellow-200 hover:bg-gray-400 transition"
+        [ngClass]="{ 'bg-pink-400': music.musicId === userSettingsMusicId }"
+      >
+        <mat-icon> favorite </mat-icon>
+      </div>
+      <div
         (click)="onDeleteMusic(music)"
         class="flex px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:text-amber-700 hover:bg-gray-400 transition"
       >

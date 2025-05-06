@@ -102,6 +102,18 @@ export class UserService {
     );
   }
 
+  updateUserSettingsMusicId(musicId: string): Observable<UserSettings> {
+    return this.authService.authData$.pipe(
+      filter((authData) => authData.isAuthenticated && !!authData.idToken),
+      switchMap((authData) =>
+        this.updateUserSettingsRequest(authData.idToken, {
+          ...this.userSettingsSubject.getValue(),
+          musicId: musicId,
+        }),
+      ),
+    );
+  }
+
   private getHeadshotRequest(userId: string): Observable<any> {
     const headers = new HttpHeaders({
       Accept: 'application/json',

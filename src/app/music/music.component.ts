@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Observable, catchError, filter, map, of, switchMap, tap } from 'rxjs';
 
 import { Music, MusicService } from '../api/music.service';
+import { UserService } from '../api/user.service';
 import { AuthService } from '../auth/auth.service';
 
 interface MusicElement {
@@ -34,6 +35,7 @@ export class MusicComponent implements AfterViewInit {
     currentTime: 0,
     volume: 1,
   };
+  userSettingsMusicId = '';
 
   @ViewChild('audioPlayerRef', { static: false })
   audioPlayerRef: ElementRef = new ElementRef(null);
@@ -41,6 +43,7 @@ export class MusicComponent implements AfterViewInit {
 
   constructor(
     private authService: AuthService,
+    private userService: UserService,
     private musicService: MusicService,
   ) {}
 
@@ -49,6 +52,7 @@ export class MusicComponent implements AfterViewInit {
     setTimeout(() => {
       // setTimeout to postpone the execution of the code
       this.loadMusicList();
+      this.loadUserSettingsMusicId();
     });
   }
 
@@ -77,6 +81,22 @@ export class MusicComponent implements AfterViewInit {
         return of([]);
       }),
     );
+  }
+
+  loadUserSettingsMusicId() {
+    this.userService.userSettings$
+      .pipe(
+        filter((settings) => settings.musicId !== ''),
+        map((settings) => settings.musicId),
+        tap((musicId) => {
+          this.userSettingsMusicId = musicId;
+        }),
+        catchError((error) => {
+          console.error('Error loading user settings music ID:', error);
+          return of('');
+        }),
+      )
+      .subscribe();
   }
 
   onSubmitMusic() {
@@ -124,6 +144,26 @@ export class MusicComponent implements AfterViewInit {
           this.setLoading(false);
           return of(null);
         }),
+      )
+      .subscribe();
+  }
+
+  onSetUserSettingsMusicId(music: Music) {
+    this.authService.authData$
+      .pipe(
+        filter((authData) => authData.isAuthenticated),
+        switchMap(() =>
+          this.userService.updateUserSettingsMusicId(music.musicId).pipe(
+            tap(() => {
+              this.loadUserSettingsMusicId();
+              console.log('User music ID set successfully!');
+            }),
+            catchError((error) => {
+              console.error('Error setting user music ID:', error);
+              return of(null);
+            }),
+          ),
+        ),
       )
       .subscribe();
   }
