@@ -123,7 +123,7 @@ export class UserService {
         tap((data: any) => this.headshotUrlSubject.next(data.imageUrl)),
         catchError((error) => {
           console.error('Failed to fetch image:', error);
-          return of(null);
+          return of('');
         }),
       );
   }
@@ -151,7 +151,7 @@ export class UserService {
         tap((data: any) => this.headshotUrlSubject.next(data.imageUrl)),
         catchError((error) => {
           console.error('Failed to upload image:', error);
-          return of(null);
+          return of('');
         }),
       );
   }

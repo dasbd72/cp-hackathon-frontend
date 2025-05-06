@@ -51,14 +51,14 @@
     </form>
   </div>
 
-  <div *ngIf="(headshotUrl$ | async) && !isLoading">
+  <div *ngIf="(headshotUrl$ | async) !== null && !isLoading">
     <form
       (ngSubmit)="onSubmitHeadshot()"
       class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg space-y-4"
     >
       <div class="flex flex-col items-center">
         <img
-          *ngIf="headshotUrl$ | async as headshotUrl"
+          *ngIf="headshotUrl"
           [src]="headshotUrl"
           alt="Current Headshot"
           class="h-32 rounded-2xl border-2 border-yellow-500 mb-4"

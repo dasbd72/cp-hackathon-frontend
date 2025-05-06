@@ -24,6 +24,7 @@ export class SettingsComponent implements OnInit {
   userSettings$: Observable<UserSettings | null> = of(null);
   isLoadingHeadshot = false;
   headshotBase64: string | null = null;
+  headshotUrl: string | null = null;
   headshotUrl$: Observable<string | null> = of(null);
 
   constructor(
@@ -32,8 +33,17 @@ export class SettingsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadSettings();
-    this.loadHeadshot();
+    // Load settings and headshot when authService changes
+    this.authService.authData$
+      .pipe(
+        filter((authData) => authData.isAuthenticated),
+        switchMap(() => {
+          this.loadSettings();
+          this.loadHeadshot();
+          return of(null);
+        }),
+      )
+      .subscribe();
   }
 
   setLoadingUserSettings(loading: boolean) {
@@ -60,6 +70,25 @@ export class SettingsComponent implements OnInit {
       catchError((error) => {
         console.error('Failed to load settings:', error);
         this.setLoadingUserSettings(false);
+        return of(null);
+      }),
+    );
+  }
+
+  loadHeadshot() {
+    this.setLoadingHeadshot(true);
+    this.headshotUrl$ = this.authService.authData$.pipe(
+      filter((authData) => authData.isAuthenticated),
+      switchMap(() => this.userService.getHeadshot()),
+      tap((headshot) => {
+        if (headshot) {
+          this.headshotUrl = headshot.imageUrl;
+        }
+        this.setLoadingHeadshot(false);
+      }),
+      catchError((error) => {
+        console.error('Failed to load headshot:', error);
+        this.setLoadingHeadshot(false);
         return of(null);
       }),
     );
@@ -100,27 +129,6 @@ export class SettingsComponent implements OnInit {
         catchError((error) => {
           console.error('Failed to upload headshot:', error);
           this.setLoadingUserSettings(false);
-          return of(null);
-        }),
-      )
-      .subscribe();
-  }
-
-  loadHeadshot() {
-    this.setLoadingHeadshot(true);
-    this.authService.authData$
-      .pipe(
-        filter((authData) => authData.isAuthenticated),
-        switchMap(() => this.userService.getHeadshot()),
-        tap((headshot) => {
-          if (headshot) {
-            this.headshotUrl$ = of(headshot.imageUrl);
-          }
-          this.setLoadingHeadshot(false);
-        }),
-        catchError((error) => {
-          console.error('Failed to load headshot:', error);
-          this.setLoadingHeadshot(false);
           return of(null);
         }),
       )
