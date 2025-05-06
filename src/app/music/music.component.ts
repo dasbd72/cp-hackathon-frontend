@@ -45,16 +45,22 @@ export class MusicComponent implements AfterViewInit {
   ) {}
 
   ngAfterViewInit() {
-    this.authService.authData$
-      .pipe(
-        filter((authData) => authData.isAuthenticated),
-        switchMap(() => {
-          this.loadMusicList();
-          return of(null);
-        }),
-      )
-      .subscribe();
+    this.setAudioPlayer();
+    setTimeout(() => {
+      // setTimeout to postpone the execution of the code
+      this.authService.authData$
+        .pipe(
+          filter((authData) => authData.isAuthenticated),
+          switchMap(() => {
+            this.loadMusicList();
+            return of(null);
+          }),
+        )
+        .subscribe();
+    });
+  }
 
+  setAudioPlayer() {
     if (!this.audioPlayerRef) {
       console.error('Audio player reference is not available');
       return;
