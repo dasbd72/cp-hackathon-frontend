@@ -20,6 +20,7 @@ export class UserService {
     email: '',
     username: '',
   });
+  private headshotUrlSubject = new BehaviorSubject<string>('');
 
   constructor(
     private authService: AuthService,
@@ -30,20 +31,24 @@ export class UserService {
     return this.userSettingsSubject.asObservable();
   }
 
-  private extractData(obj: any): UserSettings {
+  get headshotUrl$(): Observable<string> {
+    return this.headshotUrlSubject.asObservable();
+  }
+
+  private extractUserSettingsData(obj: any): UserSettings {
     return {
       ...obj.data,
     };
   }
 
-  private convertToCamelCase(obj: any): UserSettings {
+  private convertUserSettingsToCamelCase(obj: any): UserSettings {
     return {
       email: obj.email,
       username: obj.username,
     };
   }
 
-  private convertToUnderscoreCase(settings: UserSettings): any {
+  private convertUserSettingsToUnderscoreCase(settings: UserSettings): any {
     return {
       email: settings.email,
       username: settings.username,
@@ -55,8 +60,8 @@ export class UserService {
     return this.http
       .get<any>(`${environment.apiBaseUrl}/user/settings?username=${username}`, { headers })
       .pipe(
-        map((data) => this.extractData(data)),
-        map((data) => this.convertToCamelCase(data)),
+        map((data) => this.extractUserSettingsData(data)),
+        map((data) => this.convertUserSettingsToCamelCase(data)),
         tap((settings) => this.userSettingsSubject.next(settings)),
         catchError((error) => {
           console.error('Failed to fetch settings:', error);
@@ -79,7 +84,7 @@ export class UserService {
     username: string,
     userSettings: UserSettings,
   ): Observable<UserSettings> {
-    const underscoredSettings = this.convertToUnderscoreCase(userSettings);
+    const underscoredSettings = this.convertUserSettingsToUnderscoreCase(userSettings);
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
     });
@@ -90,8 +95,8 @@ export class UserService {
         { headers },
       )
       .pipe(
-        map((data) => this.extractData(data)),
-        map((data) => this.convertToCamelCase(data)),
+        map((data) => this.extractUserSettingsData(data)),
+        map((data) => this.convertUserSettingsToCamelCase(data)),
         tap((settings) => this.userSettingsSubject.next(settings)),
         catchError((error) => {
           console.error('Failed to update settings:', error);
@@ -104,6 +109,57 @@ export class UserService {
     return this.authService.authData$.pipe(
       filter((authData) => authData.isAuthenticated),
       switchMap((authData) => this.updateUserSettingsRequest(authData.username, userSettings)),
+    );
+  }
+
+  private getHeadshotRequest(username: string): Observable<any> {
+    const headers = new HttpHeaders({
+      Accept: 'application/json',
+    });
+    return this.http
+      .get<any>(`${environment.apiBaseUrl}/user/image?username=${username}`, { headers })
+      .pipe(
+        map((data: any) => ({ imageUrl: data.data.image_url })),
+        tap((data: any) => this.headshotUrlSubject.next(data.imageUrl)),
+        catchError((error) => {
+          console.error('Failed to fetch image:', error);
+          return of(null);
+        }),
+      );
+  }
+
+  getHeadshot(): Observable<any> {
+    return this.authService.authData$.pipe(
+      filter((authData) => authData.isAuthenticated),
+      switchMap((authData) => this.getHeadshotRequest(authData.username)),
+    );
+  }
+
+  private uploadHeadshotRequest(username: string, base64image: string): Observable<any> {
+    const headers = new HttpHeaders({
+      Accept: 'application/json',
+    });
+    const data = {
+      image: base64image,
+    };
+    return this.http
+      .post<any>(`${environment.apiBaseUrl}/user/image?username=${username}`, data, {
+        headers,
+      })
+      .pipe(
+        map((data: any) => ({ imageUrl: data.data.image_url })),
+        tap((data: any) => this.headshotUrlSubject.next(data.imageUrl)),
+        catchError((error) => {
+          console.error('Failed to upload image:', error);
+          return of(null);
+        }),
+      );
+  }
+
+  uploadHeadshot(base64image: string): Observable<any> {
+    return this.authService.authData$.pipe(
+      filter((authData) => authData.isAuthenticated),
+      switchMap((authData) => this.uploadHeadshotRequest(authData.username, base64image)),
     );
   }
 }

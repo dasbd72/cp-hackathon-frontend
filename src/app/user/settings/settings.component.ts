@@ -16,11 +16,15 @@ import { AuthService } from '../../auth/auth.service';
 })
 export class SettingsComponent implements OnInit {
   isLoading = false;
+  isLoadingUserSettings = false;
   userSettings: UserSettings = {
     email: '',
     username: '',
   };
   userSettings$: Observable<UserSettings | null> = of(null);
+  isLoadingHeadshot = false;
+  headshotBase64: string | null = null;
+  headshotUrl$: Observable<string | null> = of(null);
 
   constructor(
     private authService: AuthService,
@@ -29,10 +33,21 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {
     this.loadSettings();
+    this.loadHeadshot();
+  }
+
+  setLoadingUserSettings(loading: boolean) {
+    this.isLoadingUserSettings = loading;
+    this.isLoading = this.isLoadingUserSettings || this.isLoadingHeadshot;
+  }
+
+  setLoadingHeadshot(loading: boolean) {
+    this.isLoadingHeadshot = loading;
+    this.isLoading = this.isLoadingUserSettings || this.isLoadingHeadshot;
   }
 
   loadSettings() {
-    this.isLoading = true;
+    this.setLoadingUserSettings(true);
     this.userSettings$ = this.authService.authData$.pipe(
       filter((authData) => authData.isAuthenticated),
       switchMap(() => this.userService.getUserSettings()),
@@ -40,18 +55,18 @@ export class SettingsComponent implements OnInit {
         if (settings) {
           this.userSettings = { ...settings }; // Initialize userSettings
         }
-        this.isLoading = false;
+        this.setLoadingUserSettings(false);
       }),
       catchError((error) => {
         console.error('Failed to load settings:', error);
-        this.isLoading = false;
+        this.setLoadingUserSettings(false);
         return of(null);
       }),
     );
   }
 
-  onSubmit() {
-    this.isLoading = true;
+  onSubmitUserSettings() {
+    this.setLoadingUserSettings(true);
     this.authService.authData$
       .pipe(
         filter((authData) => authData.isAuthenticated),
@@ -60,15 +75,66 @@ export class SettingsComponent implements OnInit {
         ),
         tap((updatedSettings) => {
           this.userSettings = { ...updatedSettings }; // Update userSettings with response
-          this.isLoading = false;
+          this.setLoadingUserSettings(false);
           console.log('Settings updated successfully!');
         }),
         catchError((error) => {
           console.error('Failed to update settings:', error);
-          this.isLoading = false;
+          this.setLoadingUserSettings(false);
           return of(null);
         }),
       )
       .subscribe();
+  }
+
+  onSubmitHeadshot() {
+    this.setLoadingUserSettings(true);
+    this.authService.authData$
+      .pipe(
+        filter((authData) => authData.isAuthenticated),
+        switchMap(() => this.userService.uploadHeadshot(this.headshotBase64!)), // Pass headshotBase64
+        tap(() => {
+          this.setLoadingUserSettings(false);
+          console.log('Headshot uploaded successfully!');
+        }),
+        catchError((error) => {
+          console.error('Failed to upload headshot:', error);
+          this.setLoadingUserSettings(false);
+          return of(null);
+        }),
+      )
+      .subscribe();
+  }
+
+  loadHeadshot() {
+    this.setLoadingHeadshot(true);
+    this.authService.authData$
+      .pipe(
+        filter((authData) => authData.isAuthenticated),
+        switchMap(() => this.userService.getHeadshot()),
+        tap((headshot) => {
+          if (headshot) {
+            this.headshotUrl$ = of(headshot.imageUrl);
+          }
+          this.setLoadingHeadshot(false);
+        }),
+        catchError((error) => {
+          console.error('Failed to load headshot:', error);
+          this.setLoadingHeadshot(false);
+          return of(null);
+        }),
+      )
+      .subscribe();
+  }
+
+  onFileChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.headshotBase64 = e.target.result.split(',')[1]; // Extract base64 string
+      };
+      reader.readAsDataURL(file);
+    }
   }
 }
