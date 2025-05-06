@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, switchMap, tap } from 'rxjs/operators';
+
+import { OidcSecurityService } from 'angular-auth-oidc-client';
 
 export interface AuthData {
   isAuthenticated: boolean;
+  userData: any;
+  accessToken: string;
+  idToken: string;
   isLoading: boolean;
-  username: string;
 }
 
 @Injectable({
@@ -14,55 +19,75 @@ export interface AuthData {
 export class AuthService {
   private authDataSubject = new BehaviorSubject<AuthData>({
     isAuthenticated: false,
+    userData: null,
+    accessToken: '',
+    idToken: '',
     isLoading: true,
-    username: '',
   });
 
-  constructor() {
-    // Load username from local storage
-    setTimeout(() => {
-      const storedUsername = localStorage.getItem('username');
-      if (storedUsername) {
-        this.authDataSubject.next({
-          ...this.authDataSubject.value,
-          isAuthenticated: true,
-          username: storedUsername,
-          isLoading: false,
-        });
-      } else {
-        this.authDataSubject.next({
-          ...this.authDataSubject.value,
-          isLoading: false,
-        });
-      }
-    }, 10);
+  constructor(private readonly oidcSecurityService: OidcSecurityService) {
+    this.oidcSecurityService.isAuthenticated$.subscribe((isAuthenticatedResult) => {
+      this.authDataSubject.next({
+        ...this.authDataSubject.value,
+        isAuthenticated: isAuthenticatedResult.isAuthenticated,
+        isLoading: false,
+      });
+    });
+    this.oidcSecurityService
+      .checkAuth()
+      .pipe(
+        tap(({ isAuthenticated, userData }) => {
+          this.authDataSubject.next({
+            ...this.authDataSubject.value,
+            isAuthenticated,
+            userData,
+            isLoading: false,
+          });
+        }),
+        switchMap(() => this.oidcSecurityService.getAccessToken()),
+        tap((accessToken) => {
+          this.authDataSubject.next({
+            ...this.authDataSubject.value,
+            accessToken,
+          });
+        }),
+        switchMap(() => this.oidcSecurityService.getIdToken()),
+        tap((idToken) => {
+          this.authDataSubject.next({
+            ...this.authDataSubject.value,
+            idToken,
+          });
+        }),
+        catchError((error) => {
+          console.error('Authentication error:', error);
+          this.authDataSubject.next({
+            ...this.authDataSubject.value,
+            isLoading: false,
+          });
+          return of(null);
+        }),
+      )
+      .subscribe();
   }
 
   get authData$(): Observable<AuthData> {
     return this.authDataSubject.asObservable();
   }
 
-  login(username: string): void {
-    // Simulate a login process
-    setTimeout(() => {
-      localStorage.setItem('username', username);
-      this.authDataSubject.next({
-        isAuthenticated: true,
-        isLoading: false,
-        username: username,
-      });
-    }, 10);
+  login(): void {
+    this.oidcSecurityService.authorize();
   }
 
   logout(): void {
-    // Simulate a logout process
-    setTimeout(() => {
-      localStorage.removeItem('username');
-      this.authDataSubject.next({
-        isAuthenticated: false,
-        isLoading: false,
-        username: '',
-      });
-    }, 10);
+    this.oidcSecurityService
+      .logoff()
+      .pipe(
+        tap((result) => console.log('Logged off:', result)),
+        catchError((error) => {
+          console.error('Logout error:', error);
+          return of(null);
+        }),
+      )
+      .subscribe();
   }
 }

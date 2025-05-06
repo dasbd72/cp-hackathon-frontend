@@ -55,45 +55,42 @@ export class UserService {
     };
   }
 
-  private fetchUserSettings(username: string): Observable<UserSettings> {
-    const headers = new HttpHeaders();
-    return this.http
-      .get<any>(`${environment.apiBaseUrl}/user/settings?username=${username}`, { headers })
-      .pipe(
-        map((data) => this.extractUserSettingsData(data)),
-        map((data) => this.convertUserSettingsToCamelCase(data)),
-        tap((settings) => this.userSettingsSubject.next(settings)),
-        catchError((error) => {
-          console.error('Failed to fetch settings:', error);
-          return of({
-            email: '',
-            username: '',
-          });
-        }),
-      );
+  private fetchUserSettings(idToken: string): Observable<UserSettings> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${idToken}`,
+    });
+    return this.http.get<any>(`${environment.apiBaseUrl}/user/settings`, { headers }).pipe(
+      map((data) => this.extractUserSettingsData(data)),
+      map((data) => this.convertUserSettingsToCamelCase(data)),
+      tap((settings) => this.userSettingsSubject.next(settings)),
+      catchError((error) => {
+        console.error('Failed to fetch settings:', error);
+        return of({
+          email: '',
+          username: '',
+        });
+      }),
+    );
   }
 
   getUserSettings(): Observable<UserSettings> {
     return this.authService.authData$.pipe(
-      filter((authData) => authData.isAuthenticated),
-      switchMap((authData) => this.fetchUserSettings(authData.username)),
+      filter((authData) => authData.isAuthenticated && !!authData.idToken),
+      switchMap((authData) => this.fetchUserSettings(authData.idToken)),
     );
   }
 
   private updateUserSettingsRequest(
-    username: string,
+    idToken: string,
     userSettings: UserSettings,
   ): Observable<UserSettings> {
     const underscoredSettings = this.convertUserSettingsToUnderscoreCase(userSettings);
     const headers = new HttpHeaders({
+      Authorization: `Bearer ${idToken}`,
       'Content-Type': 'application/json',
     });
     return this.http
-      .put<any>(
-        `${environment.apiBaseUrl}/user/settings?username=${username}`,
-        underscoredSettings,
-        { headers },
-      )
+      .put<any>(`${environment.apiBaseUrl}/user/settings`, underscoredSettings, { headers })
       .pipe(
         map((data) => this.extractUserSettingsData(data)),
         map((data) => this.convertUserSettingsToCamelCase(data)),
@@ -107,43 +104,43 @@ export class UserService {
 
   updateUserSettings(userSettings: UserSettings): Observable<UserSettings> {
     return this.authService.authData$.pipe(
-      filter((authData) => authData.isAuthenticated),
-      switchMap((authData) => this.updateUserSettingsRequest(authData.username, userSettings)),
+      filter((authData) => authData.isAuthenticated && !!authData.idToken),
+      switchMap((authData) => this.updateUserSettingsRequest(authData.idToken, userSettings)),
     );
   }
 
-  private getHeadshotRequest(username: string): Observable<any> {
+  private getHeadshotRequest(idToken: string): Observable<any> {
     const headers = new HttpHeaders({
+      Authorization: `Bearer ${idToken}`,
       Accept: 'application/json',
     });
-    return this.http
-      .get<any>(`${environment.apiBaseUrl}/user/image?username=${username}`, { headers })
-      .pipe(
-        map((data: any) => ({ imageUrl: data.data.image_url })),
-        tap((data: any) => this.headshotUrlSubject.next(data.imageUrl)),
-        catchError((error) => {
-          console.error('Failed to fetch image:', error);
-          return of('');
-        }),
-      );
+    return this.http.get<any>(`${environment.apiBaseUrl}/user/image`, { headers }).pipe(
+      map((data: any) => ({ imageUrl: data.data.image_url })),
+      tap((data: any) => this.headshotUrlSubject.next(data.imageUrl)),
+      catchError((error) => {
+        console.error('Failed to fetch image:', error);
+        return of('');
+      }),
+    );
   }
 
   getHeadshot(): Observable<any> {
     return this.authService.authData$.pipe(
-      filter((authData) => authData.isAuthenticated),
-      switchMap((authData) => this.getHeadshotRequest(authData.username)),
+      filter((authData) => authData.isAuthenticated && !!authData.idToken),
+      switchMap((authData) => this.getHeadshotRequest(authData.idToken)),
     );
   }
 
-  private uploadHeadshotRequest(username: string, base64image: string): Observable<any> {
+  private uploadHeadshotRequest(idToken: string, base64image: string): Observable<any> {
     const headers = new HttpHeaders({
+      Authorization: `Bearer ${idToken}`,
       Accept: 'application/json',
     });
     const data = {
       image: base64image,
     };
     return this.http
-      .post<any>(`${environment.apiBaseUrl}/user/image?username=${username}`, data, {
+      .post<any>(`${environment.apiBaseUrl}/user/image`, data, {
         headers,
       })
       .pipe(
@@ -158,8 +155,8 @@ export class UserService {
 
   uploadHeadshot(base64image: string): Observable<any> {
     return this.authService.authData$.pipe(
-      filter((authData) => authData.isAuthenticated),
-      switchMap((authData) => this.uploadHeadshotRequest(authData.username, base64image)),
+      filter((authData) => authData.isAuthenticated && !!authData.idToken),
+      switchMap((authData) => this.uploadHeadshotRequest(authData.idToken, base64image)),
     );
   }
 }
