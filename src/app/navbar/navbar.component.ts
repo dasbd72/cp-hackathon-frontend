@@ -27,6 +27,7 @@ export class NavbarComponent implements OnInit {
   userSettings: UserSettings = {
     email: '',
     username: '',
+    musicId: '',
   };
   isUserDropdownOpen = false;
   isMobileMenuOpen = false; // Added for mobile menu

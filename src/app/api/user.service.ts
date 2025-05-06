@@ -10,6 +10,7 @@ import { AuthService } from '../auth/auth.service';
 export interface UserSettings {
   email: string;
   username: string;
+  musicId: string;
 }
 
 @Injectable({
@@ -19,6 +20,7 @@ export class UserService {
   private userSettingsSubject = new BehaviorSubject<UserSettings>({
     email: '',
     username: '',
+    musicId: '',
   });
   private headshotUrlSubject = new BehaviorSubject<string>('');
 
@@ -39,6 +41,7 @@ export class UserService {
     return {
       email: obj.data.email,
       username: obj.data.username,
+      musicId: obj.data.music_id,
     };
   }
 
@@ -54,6 +57,7 @@ export class UserService {
           return of({
             email: '',
             username: '',
+            musicId: '',
           });
         }),
       );
@@ -73,6 +77,7 @@ export class UserService {
     const underscoredSettings = {
       email: userSettings.email,
       username: userSettings.username,
+      music_id: userSettings.musicId,
     };
     const headers = new HttpHeaders({
       Authorization: `Bearer ${idToken}`,

@@ -20,6 +20,7 @@ export class SettingsComponent implements OnInit {
   userSettings: UserSettings = {
     email: '',
     username: '',
+    musicId: '',
   };
   userSettings$: Observable<UserSettings | null> = of(null);
   isLoadingHeadshot = false;
