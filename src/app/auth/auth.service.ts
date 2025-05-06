@@ -37,6 +37,8 @@ export class AuthService {
       .checkAuth()
       .pipe(
         tap(({ isAuthenticated, userData }) => {
+          console.log(userData);
+
           this.authDataSubject.next({
             ...this.authDataSubject.value,
             isAuthenticated,

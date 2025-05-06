@@ -41,11 +41,8 @@ export class MusicService {
     };
   }
 
-  private fetchMusicList(idToken: string): Observable<Music[] | null> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${idToken}`,
-    });
-
+  private fetchMusicList(): Observable<Music[] | null> {
+    const headers = new HttpHeaders();
     return this.http.get<any>(`${environment.apiBaseUrl}/music/list`, { headers }).pipe(
       map(this.extractMusicListData),
       catchError((error) => {
@@ -56,17 +53,11 @@ export class MusicService {
   }
 
   getMusicList(): Observable<Music[] | null> {
-    return this.authService.authData$.pipe(
-      filter((authData) => authData.isAuthenticated && !!authData.idToken),
-      switchMap((authData) => this.fetchMusicList(authData.idToken)),
-    );
+    return this.fetchMusicList();
   }
 
-  private fetchMusic(idToken: string, musicId: string): Observable<Music | null> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${idToken}`,
-    });
-
+  private fetchMusic(musicId: string): Observable<Music | null> {
+    const headers = new HttpHeaders();
     return this.http
       .get<any>(`${environment.apiBaseUrl}/music?music_id=${musicId}`, { headers })
       .pipe(
@@ -79,10 +70,7 @@ export class MusicService {
   }
 
   getMusic(musicId: string): Observable<Music | null> {
-    return this.authService.authData$.pipe(
-      filter((authData) => authData.isAuthenticated && !!authData.idToken),
-      switchMap((authData) => this.fetchMusic(authData.idToken, musicId)),
-    );
+    return this.fetchMusic(musicId);
   }
 
   private uploadMusicRequest(
