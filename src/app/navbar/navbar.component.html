@@ -1,16 +1,16 @@
 <mat-toolbar>
   <button mat-button aria-label="Menu icon" [routerLink]="['/']">
     <mat-icon> energy_savings_leaf </mat-icon>
-    App
+    <span class="nav-item-text hidden md:inline">App</span>
   </button>
   <span class="flex flex-auto"></span>
   <button mat-button aria-label="Music icon" [routerLink]="['/music']">
     <mat-icon> music_note </mat-icon>
-    Music
+    <span class="nav-item-text hidden md:inline">Music</span>
   </button>
   <button mat-button aria-label="Logout" *ngIf="!authData.isAuthenticated" (click)="login()">
     <mat-icon> login </mat-icon>
-    Login
+    <span class="nav-item-text hidden md:inline">Login</span>
   </button>
   <button
     mat-button
@@ -19,10 +19,10 @@
     [routerLink]="['/settings']"
   >
     <mat-icon> settings </mat-icon>
-    Settings
+    <span class="nav-item-text hidden md:inline">Settings</span>
   </button>
   <button mat-button aria-label="Login" *ngIf="authData.isAuthenticated" (click)="logout()">
     <mat-icon> logout </mat-icon>
-    Logout
+    <span class="nav-item-text hidden md:inline">Logout</span>
   </button>
 </mat-toolbar>
