@@ -1,43 +1,22 @@
-<div class="relative">
-  <form
-    (ngSubmit)="onSubmitMusic()"
-    class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg space-y-4"
-  >
-    <div class="flex flex-col">
-      <label for="music" class="mb-1 text-sm font-medium text-gray-700">Music:</label>
-      <input
-        type="file"
-        id="music"
-        name="music"
-        (change)="onFileChange($event)"
-        class="p-2 border rounded-lg bg-gray-100 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 hover:bg-gray-200"
-        aria-describedby="headshotHelp"
-        accept="audio/*"
-      />
-      <small id="headshotHelp" class="text-xs text-gray-500">Upload music.</small>
+<div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+  <form (ngSubmit)="onSubmitMusic()">
+    <div class="flex justify-center">
+      <button mat-raised-button type="button" (click)="fileInput.click()">Choose Music</button>
+      <input hidden (change)="onFileChange($event)" #fileInput type="file" />
+      <div class="ms-2 self-center">{{ musicFile?.name }}</div>
     </div>
 
     <div class="flex justify-center">
-      <button
-        type="submit"
-        class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-        [disabled]="!musicBase64"
-      >
+      <button mat-button type="submit" [disabled]="!musicBase64">
         <mat-icon>cloud_upload</mat-icon>
+        Upload
       </button>
     </div>
   </form>
+</div>
 
-  <div
-    *ngIf="isLoading"
-    class="absolute top-64 left-0 w-full h-full flex items-center justify-center bg-white bg-opacity-75 z-10"
-  >
-    <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-yellow-500"></div>
-  </div>
-
-  <div
-    class="flex items-center justify-between mt-4 max-w-4xl mx-auto px-6 py-2 bg-white shadow-lg rounded-lg"
-  >
+<div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-4">
+  <div class="flex justify-between items-center">
     <audio
       #audioPlayerRef
       src="currentMusic?.music.presignedUrl"
@@ -48,72 +27,70 @@
       Your browser does not support the audio element.
     </audio>
     <div class="flex flex-row">
-      <label for="timeRange" class="mr-2 text-sm text-nowrap font-medium text-gray-700">
+      <label for="timeRange" class="mr-2 text-sm text-nowrap font-medium text-gray-700 self-center">
         Time: {{ currentMusic.currentTime * 1000 | date: 'mm:ss' }} /
         {{ currentMusic.duration * 1000 | date: 'mm:ss' }}
       </label>
-      <input
-        type="range"
-        id="timeRange"
-        name="timeRange"
-        min="0"
-        [max]="currentMusic.duration"
-        [value]="currentMusic.currentTime"
-        (input)="onInputTimeChange($event)"
-        class="w-full"
-      />
+      <mat-slider min="0" [max]="currentMusic.duration" value-indicator-width="0">
+        <input
+          matSliderThumb
+          [(ngModel)]="currentMusic.currentTime"
+          (input)="onInputTimeChange($event)"
+        />
+      </mat-slider>
     </div>
     <div class="flex flex-row">
-      <label for="volumeRange" class="mr-2 text-sm text-nowrap font-medium text-gray-700">
+      <label
+        for="volumeRange"
+        class="mr-2 text-sm text-nowrap font-medium text-gray-700 self-center"
+      >
         Volume: {{ currentMusic.volume * 100 | number: '1.0-0' }}%
       </label>
-      <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.01"
-        value="0.2"
-        class="w-full"
-        (input)="onInputVolumeChange($event)"
-      />
+      <mat-slider min="0" max="1" step="0.01" value-indicator-width="0">
+        <input
+          matSliderThumb
+          [(ngModel)]="currentMusic.volume"
+          (input)="onInputVolumeChange($event)"
+        />
+      </mat-slider>
     </div>
-    <button
-      (click)="togglePlay()"
-      class="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-      [disabled]="!currentMusic.music.presignedUrl"
-    >
+    <button mat-mini-fab (click)="togglePlay()" [disabled]="!currentMusic.music.presignedUrl">
       <mat-icon>play_arrow</mat-icon>
     </button>
   </div>
+</div>
 
+<div *ngIf="isLoading" class="mt-4 flex justify-center">
+  <mat-spinner></mat-spinner>
+</div>
+
+<div
+  *ngIf="(musicList$ | async) && !isLoading"
+  class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-4"
+>
   <div
-    *ngIf="(musicList$ | async) && !isLoading"
-    class="mt-4 max-w-4xl mx-auto px-6 py-2 bg-white shadow-lg rounded-lg space-y-4"
+    *ngFor="let music of musicList"
+    class="flex items-center p-2 bg-gray-100 rounded-lg mb-2 space-x-2"
   >
+    <div class="flex px-2 py-1 text-gray-700 mr-auto">{{ music.title }}</div>
     <div
-      *ngFor="let music of musicList"
-      class="flex items-center p-2 bg-gray-100 rounded-lg mb-2 space-x-2"
+      (click)="onSetUserSettingsMusicId(music)"
+      class="flex px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:text-yellow-200 hover:bg-gray-400 transition"
+      [ngClass]="{ 'bg-pink-400': music.musicId === userSettingsMusicId }"
     >
-      <div class="flex px-2 py-1 text-gray-700 mr-auto">{{ music.title }}</div>
-      <div
-        (click)="onSetUserSettingsMusicId(music)"
-        class="flex px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:text-yellow-200 hover:bg-gray-400 transition"
-        [ngClass]="{ 'bg-pink-400': music.musicId === userSettingsMusicId }"
-      >
-        <mat-icon> favorite </mat-icon>
-      </div>
-      <div
-        (click)="onDeleteMusic(music)"
-        class="flex px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:text-amber-700 hover:bg-gray-400 transition"
-      >
-        <mat-icon>delete</mat-icon>
-      </div>
-      <div
-        (click)="onPlayMusic(music)"
-        class="flex px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:text-green-700 hover:bg-gray-400 transition"
-      >
-        <mat-icon>play_arrow</mat-icon>
-      </div>
+      <mat-icon> favorite </mat-icon>
+    </div>
+    <div
+      (click)="onDeleteMusic(music)"
+      class="flex px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:text-amber-700 hover:bg-gray-400 transition"
+    >
+      <mat-icon>delete</mat-icon>
+    </div>
+    <div
+      (click)="onPlayMusic(music)"
+      class="flex px-2 py-1 bg-gray-200 text-gray-700 rounded-lg hover:text-green-700 hover:bg-gray-400 transition"
+    >
+      <mat-icon>play_arrow</mat-icon>
     </div>
   </div>
 </div>

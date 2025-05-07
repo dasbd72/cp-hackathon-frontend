@@ -1,92 +1,65 @@
-<div class="relative">
-  <div
-    *ngIf="isLoading"
-    class="absolute top-64 left-0 w-full h-full flex items-center justify-center bg-white bg-opacity-75 z-10"
-  >
-    <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-yellow-500"></div>
-  </div>
-  <div *ngIf="(userSettings$ | async) && !isLoading">
-    <form
-      (ngSubmit)="onSubmitUserSettings()"
-      class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg space-y-4"
-    >
-      <h2 class="text-2xl font-semibold text-center">Update User Settings</h2>
+<div *ngIf="isLoading" class="flex justify-center">
+  <mat-spinner></mat-spinner>
+</div>
 
-      <div class="flex flex-col">
-        <label for="email" class="mb-1 text-sm font-medium text-gray-700">Email:</label>
+<div
+  *ngIf="(userSettings$ | async) && !isLoading"
+  class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg"
+>
+  <form (ngSubmit)="onSubmitUserSettings()">
+    <h2 class="text-2xl font-semibold text-center mb-2">Update User Settings</h2>
+    <div class="flex justify-center">
+      <mat-form-field>
+        <mat-label> email </mat-label>
+        <input matInput type="email" id="email" name="email" [(ngModel)]="userSettings.email" />
+      </mat-form-field>
+    </div>
+    <div class="flex justify-center">
+      <mat-form-field>
+        <mat-label> username </mat-label>
         <input
-          type="email"
-          id="email"
-          name="email"
-          [(ngModel)]="userSettings.email"
-          class="p-2 border rounded-lg bg-gray-100 text-gray-600"
-          aria-describedby="emailHelp"
-        />
-        <small id="emailHelp" class="text-xs text-gray-500">Your email address.</small>
-      </div>
-
-      <div class="flex flex-col">
-        <label for="username" class="mb-1 text-sm font-medium text-gray-700">Username:</label>
-        <input
-          type="text"
+          matInput
+          type="username"
           id="username"
           name="username"
-          [(ngModel)]="userSettings.username"
-          class="p-2 border rounded-lg bg-gray-100 text-gray-600"
           required
-          aria-describedby="usernameHelp"
+          [(ngModel)]="userSettings.username"
         />
-        <small id="usernameHelp" class="text-xs text-gray-500">Your preferred username.</small>
-      </div>
+      </mat-form-field>
+    </div>
 
+    <div class="flex justify-center">
+      <button mat-button type="submit" [disabled]="!userSettings.username">Update Settings</button>
+    </div>
+  </form>
+</div>
+
+<div
+  *ngIf="(headshotUrl$ | async) !== null && !isLoading"
+  class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-4"
+>
+  <form (ngSubmit)="onSubmitHeadshot()">
+    <div class="space-y-2">
       <div class="flex justify-center">
-        <button
-          type="submit"
-          class="px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-400 transition"
-          [disabled]="!userSettings.username"
-        >
-          Update Settings
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <div *ngIf="(headshotUrl$ | async) !== null && !isLoading">
-    <form
-      (ngSubmit)="onSubmitHeadshot()"
-      class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg space-y-4"
-    >
-      <div class="flex flex-col items-center">
         <img
           *ngIf="headshotUrl"
           [src]="headshotUrl"
           alt="Current Headshot"
-          class="h-32 rounded-2xl border-2 border-yellow-500 mb-4"
+          class="h-32 rounded-xl"
         />
       </div>
-      <div class="flex flex-col">
-        <label for="headshot" class="mb-1 text-sm font-medium text-gray-700">Headshot:</label>
-        <input
-          type="file"
-          id="headshot"
-          name="headshot"
-          (change)="onFileChange($event)"
-          class="p-2 border rounded-lg bg-gray-100 text-gray-600"
-          aria-describedby="headshotHelp"
-          accept="image/*"
-        />
-        <small id="headshotHelp" class="text-xs text-gray-500">Upload a new headshot.</small>
+      <div class="flex justify-center">
+        <button mat-raised-button type="button" (click)="fileInput.click()">Choose Headshot</button>
+        <input hidden (change)="onFileChange($event)" #fileInput type="file" />
+        <div class="ms-2 self-center">{{ headshotFile?.name }}</div>
       </div>
 
       <div class="flex justify-center">
-        <button
-          type="submit"
-          class="px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-400 transition"
-          [disabled]="!headshotBase64"
-        >
-          Upload Headshot
+        <button mat-button type="submit" [disabled]="!headshotBase64">
+          <mat-icon>cloud_upload</mat-icon>
+          Upload
         </button>
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
 </div>

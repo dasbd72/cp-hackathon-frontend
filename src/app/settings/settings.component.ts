@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { Observable, catchError, filter, of, switchMap, tap } from 'rxjs';
 
@@ -10,7 +14,14 @@ import { AuthService } from '../auth/auth.service';
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [
+    FormsModule,
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+  ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css',
 })
@@ -24,6 +35,7 @@ export class SettingsComponent implements OnInit {
   };
   userSettings$: Observable<UserSettings | null> = of(null);
   isLoadingHeadshot = false;
+  headshotFile: File | null = null;
   headshotBase64: string | null = null;
   headshotUrl: string | null = null;
   headshotUrl$: Observable<string | null> = of(null);
@@ -137,13 +149,13 @@ export class SettingsComponent implements OnInit {
   }
 
   onFileChange(event: any) {
-    const file = event.target.files[0];
-    if (file) {
+    this.headshotFile = event.target.files[0];
+    if (this.headshotFile) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.headshotBase64 = e.target.result.split(',')[1]; // Extract base64 string
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(this.headshotFile);
     }
   }
 }

@@ -1,7 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSliderModule } from '@angular/material/slider';
 
 import { Observable, catchError, filter, map, of, switchMap, tap } from 'rxjs';
 
@@ -18,7 +22,15 @@ interface MusicElement {
 
 @Component({
   selector: 'app-music',
-  imports: [FormsModule, CommonModule, MatIconModule],
+  imports: [
+    FormsModule,
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    MatInputModule,
+    MatSliderModule,
+    MatProgressSpinnerModule,
+  ],
   templateUrl: './music.component.html',
   styleUrl: './music.component.css',
 })
@@ -26,7 +38,8 @@ export class MusicComponent implements AfterViewInit {
   isLoading = false;
   musicList: Music[] | null = [];
   musicList$: Observable<Music[] | null> = of([]);
-  musicBase64 = '';
+  musicFile: File | null = null;
+  musicBase64: string | null = null;
   title = '';
   extension = '';
   currentMusic: MusicElement = {
@@ -100,17 +113,15 @@ export class MusicComponent implements AfterViewInit {
   }
 
   onSubmitMusic() {
-    if (!this.musicBase64) {
-      console.error('No music file selected');
-    }
     this.setLoading(true);
     this.authService.authData$
       .pipe(
         filter((authData) => authData.isAuthenticated),
         switchMap(() =>
-          this.musicService.uploadMusic(this.musicBase64, this.title, this.extension),
+          this.musicService.uploadMusic(this.musicBase64!, this.title, this.extension),
         ),
         tap(() => {
+          this.musicFile = null;
           this.musicBase64 = '';
           this.title = '';
           this.loadMusicList();
@@ -169,19 +180,19 @@ export class MusicComponent implements AfterViewInit {
   }
 
   onFileChange(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      if (file.name.split('.').length < 2) {
+    this.musicFile = event.target.files[0];
+    if (this.musicFile) {
+      if (this.musicFile.name.split('.').length < 2) {
         console.error('Invalid file name');
         return;
       }
-      this.title = file.name.split('.')[0];
-      this.extension = file.name.split('.')[1];
+      this.title = this.musicFile.name.split('.')[0];
+      this.extension = this.musicFile.name.split('.')[1];
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.musicBase64 = e.target.result.split(',')[1]; // Extract base64 string
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(this.musicFile);
     }
   }
 
