@@ -54,10 +54,9 @@ export class NavbarComponent implements OnInit {
         filter((authData) => authData.isAuthenticated && !!authData.accessToken),
         switchMap(() =>
           this.userService.getUserSettings().pipe(
+            filter((settings) => !!settings),
             tap((settings) => {
-              if (settings) {
-                this.userSettings = settings;
-              }
+              this.userSettings = settings;
             }),
             catchError((error) => {
               console.error('Failed to load user settings:', error);

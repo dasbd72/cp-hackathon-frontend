@@ -22,20 +22,11 @@ export class UserService {
     username: '',
     musicId: '',
   });
-  private headshotUrlSubject = new BehaviorSubject<string>('');
 
   constructor(
     private authService: AuthService,
     private http: HttpClient,
   ) {}
-
-  get userSettings$(): Observable<UserSettings> {
-    return this.userSettingsSubject.asObservable();
-  }
-
-  get headshotUrl$(): Observable<string> {
-    return this.headshotUrlSubject.asObservable();
-  }
 
   private extractUserSettingsData(obj: any): UserSettings {
     return {
@@ -51,7 +42,6 @@ export class UserService {
       .get<any>(`${environment.apiBaseUrl}/user/settings?user_id=${userId}`, { headers })
       .pipe(
         map(this.extractUserSettingsData),
-        tap((settings) => this.userSettingsSubject.next(settings)),
         catchError((error) => {
           console.error('Failed to fetch settings:', error);
           return of({
@@ -67,6 +57,7 @@ export class UserService {
     return this.authService.authData$.pipe(
       filter((authData) => authData.isAuthenticated && !!authData.userData),
       switchMap((authData) => this.fetchUserSettings(authData.userData.sub)),
+      tap((settings) => this.userSettingsSubject.next(settings)),
     );
   }
 
@@ -129,7 +120,6 @@ export class UserService {
       .get<any>(`${environment.apiBaseUrl}/user/image?user_id=${userId}`, { headers })
       .pipe(
         map((data: any) => ({ imageUrl: data.data.image_url })),
-        tap((data: any) => this.headshotUrlSubject.next(data.imageUrl)),
         catchError((error) => {
           console.error('Failed to fetch image:', error);
           return of('');
@@ -158,7 +148,6 @@ export class UserService {
       })
       .pipe(
         map((data: any) => ({ imageUrl: data.data.image_url })),
-        tap((data: any) => this.headshotUrlSubject.next(data.imageUrl)),
         catchError((error) => {
           console.error('Failed to upload image:', error);
           return of('');
