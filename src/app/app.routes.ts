@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 
 import { MusicComponent } from './music/music.component';
-import { PreferencesComponent } from './user/preferences/preferences.component';
 import { SettingsComponent } from './user/settings/settings.component';
 import { AutoLoginPartialRoutesGuard } from 'angular-auth-oidc-client';
 
@@ -16,9 +15,4 @@ export const routes: Routes = [
     component: MusicComponent,
   },
   { path: 'settings', component: SettingsComponent, canActivate: [AutoLoginPartialRoutesGuard] },
-  {
-    path: 'preferences',
-    component: PreferencesComponent,
-    canActivate: [AutoLoginPartialRoutesGuard],
-  },
 ];
