@@ -72,7 +72,8 @@ export class MusicComponent implements OnInit {
   }
 
   loadUserSettingsMusicId() {
-    this.userService.userSettings$
+    this.userService
+      .getUserSettings()
       .pipe(
         filter((settings) => settings.musicId !== ''),
         map((settings) => settings.musicId),
