@@ -19,43 +19,15 @@
           </div>
           <div class="p-2">
             <div class="flex flex-col space-y-2">
-              <div
-                class="flex px-2 py-1 text-sm font-bold text-nowrap text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-300"
-              >
+              <button mat-button>
                 {{ history.date }}
-              </div>
-              <div
-                *ngIf="history.username"
-                class="flex px-2 py-1 text-sm font-bold text-nowrap text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-300"
-              >
-                <span
-                  style="
-                    width: 8px;
-                    height: 8px;
-                    border-radius: 100%;
-                    background-color: rgb(11, 141, 11);
-                  "
-                  class="self-center mr-1"
-                ></span>
+              </button>
+              <button *ngIf="history.username" mat-button>
                 {{ history.username }}
-              </div>
-              <div
-                *ngIf="!history.username"
-                class="flex px-2 py-1 text-sm font-bold text-nowrap text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-300"
-              >
-                <span
-                  style="width: 8px; height: 8px; border-radius: 100%; background-color: red"
-                  class="self-center mr-1"
-                ></span>
-                UnknownUser
-              </div>
-              <div
-                *ngIf="history.musicId"
-                class="flex px-2 py-1 text-sm font-bold text-nowrap text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-300"
-                (click)="onPlayMusic(history.musicId)"
-              >
+              </button>
+              <button *ngIf="history.musicId" mat-button (click)="onPlayMusic(history.musicId)">
                 Play Music
-              </div>
+              </button>
             </div>
           </div>
         </div>
