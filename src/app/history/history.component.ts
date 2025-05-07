@@ -8,7 +8,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { catchError, of, tap } from 'rxjs';
 
 import { History, HistoryService } from '../api/history.service';
+import { Music, MusicService } from '../api/music.service';
 import { UserService } from '../api/user.service';
+import { MusicPlayerComponent } from '../music-player/music-player.component';
 
 interface HistoryElement {
   index: number;
@@ -22,17 +24,26 @@ interface HistoryElement {
 
 @Component({
   selector: 'app-history',
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatProgressSpinnerModule, MatIconModule],
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MusicPlayerComponent,
+  ],
   templateUrl: './history.component.html',
   styleUrl: './history.component.css',
 })
 export class HistoryComponent implements OnInit {
   isLoading = true;
   historyList: HistoryElement[] = [];
+  currentMusic: Music | null = null;
 
   constructor(
     private historyService: HistoryService,
     private userService: UserService,
+    private musicService: MusicService,
   ) {}
 
   ngOnInit(): void {
@@ -84,6 +95,25 @@ export class HistoryComponent implements OnInit {
           console.error('Error fetching history list:', error);
           this.setLoading(false);
           return of([]);
+        }),
+      )
+      .subscribe();
+  }
+
+  onPlayMusic(musicId: string): void {
+    this.musicService
+      .getMusic(musicId)
+      .pipe(
+        tap((music) => {
+          if (!music) {
+            console.error('Music not found');
+            return;
+          }
+          this.currentMusic = music;
+        }),
+        catchError((error) => {
+          console.error('Error fetching music:', error);
+          return of(null);
         }),
       )
       .subscribe();

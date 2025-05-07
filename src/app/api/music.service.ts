@@ -34,10 +34,10 @@ export class MusicService {
 
   extractMusicData(obj: any): Music {
     return {
-      musicId: obj.music_id,
-      title: obj.title,
-      s3Key: obj.s3_key,
-      presignedUrl: obj.presigned_url ? obj.presigned_url : null,
+      musicId: obj.data.music_id,
+      title: obj.data.title,
+      s3Key: obj.data.s3_key,
+      presignedUrl: obj.data.presigned_url ? obj.data.presigned_url : null,
     };
   }
 
