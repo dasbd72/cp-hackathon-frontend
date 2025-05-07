@@ -1,25 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSliderModule } from '@angular/material/slider';
 
 import { Observable, catchError, filter, map, of, switchMap, tap } from 'rxjs';
 
 import { Music, MusicService } from '../api/music.service';
 import { UserService } from '../api/user.service';
 import { AuthService } from '../auth/auth.service';
-
-interface MusicElement {
-  music: Music;
-  isPlaying: boolean;
-  duration: number;
-  currentTime: number;
-  volume: number;
-}
+import { MusicPlayerComponent } from '../music-player/music-player.component';
 
 @Component({
   selector: 'app-music',
@@ -28,14 +19,13 @@ interface MusicElement {
     CommonModule,
     MatIconModule,
     MatButtonModule,
-    MatInputModule,
-    MatSliderModule,
     MatProgressSpinnerModule,
+    MusicPlayerComponent,
   ],
   templateUrl: './music.component.html',
   styleUrl: './music.component.css',
 })
-export class MusicComponent implements AfterViewInit {
+export class MusicComponent implements OnInit {
   isLoading = false;
   musicList: Music[] | null = [];
   musicList$: Observable<Music[] | null> = of([]);
@@ -43,18 +33,13 @@ export class MusicComponent implements AfterViewInit {
   musicBase64: string | null = null;
   title = '';
   extension = '';
-  currentMusic: MusicElement = {
-    music: { musicId: '', title: '', s3Key: '', presignedUrl: '' },
-    isPlaying: false,
-    duration: 0,
-    currentTime: 0,
-    volume: 0.2,
+  currentMusic: Music = {
+    musicId: '',
+    title: '',
+    s3Key: '',
+    presignedUrl: '',
   };
   userSettingsMusicId = '';
-
-  @ViewChild('audioPlayerRef', { static: false })
-  audioPlayerRef: ElementRef = new ElementRef(null);
-  audioPlayer: HTMLMediaElement = new Audio();
 
   constructor(
     private authService: AuthService,
@@ -62,22 +47,9 @@ export class MusicComponent implements AfterViewInit {
     private musicService: MusicService,
   ) {}
 
-  ngAfterViewInit() {
-    this.setAudioPlayer();
-    setTimeout(() => {
-      // setTimeout to postpone the execution of the code
-      this.loadMusicList();
-      this.loadUserSettingsMusicId();
-    });
-  }
-
-  setAudioPlayer() {
-    if (!this.audioPlayerRef) {
-      console.error('Audio player reference is not available');
-      return;
-    }
-    this.audioPlayer = this.audioPlayerRef?.nativeElement;
-    this.audioPlayer.volume = this.currentMusic.volume;
+  ngOnInit() {
+    this.loadMusicList();
+    this.loadUserSettingsMusicId();
   }
 
   setLoading(loading: boolean) {
@@ -199,55 +171,7 @@ export class MusicComponent implements AfterViewInit {
     }
   }
 
-  onLoadedMetadata() {
-    this.currentMusic = {
-      ...this.currentMusic,
-      duration: this.audioPlayer.duration,
-      isPlaying: true,
-      currentTime: 0,
-    };
-  }
-
-  onTimeUpdate() {
-    this.currentMusic = {
-      ...this.currentMusic,
-      duration: this.audioPlayer.duration,
-      currentTime: this.audioPlayer.currentTime,
-    };
-  }
-
   onPlayMusic(music: Music) {
-    this.currentMusic = {
-      ...this.currentMusic,
-      music: music,
-      isPlaying: false,
-      duration: 0,
-      currentTime: 0,
-    };
-    this.audioPlayer.src = music.presignedUrl ? music.presignedUrl : '';
-    this.audioPlayer.load();
-    this.audioPlayer.play();
-  }
-
-  onInputTimeChange(event: any) {
-    const value = event.target.value;
-    this.audioPlayer.currentTime = value;
-    this.currentMusic.currentTime = value;
-  }
-
-  onInputVolumeChange(event: any) {
-    const value = event.target.value;
-    this.currentMusic.volume = value;
-    this.audioPlayer.volume = value;
-  }
-
-  togglePlay() {
-    if (this.audioPlayer.paused) {
-      this.currentMusic.isPlaying = true;
-      this.audioPlayer.play();
-    } else {
-      this.currentMusic.isPlaying = false;
-      this.audioPlayer.pause();
-    }
+    this.currentMusic = music;
   }
 }

@@ -19,72 +19,7 @@
 </div>
 
 <div class="max-w-4xl mx-auto px-4 py-2 bg-white shadow-lg rounded-lg mt-4">
-  <audio
-    #audioPlayerRef
-    src="currentMusic?.music.presignedUrl"
-    (loadedmetadata)="onLoadedMetadata()"
-    (timeupdate)="onTimeUpdate()"
-  >
-    <source [src]="currentMusic.music.presignedUrl" type="audio/mpeg" />
-    Your browser does not support the audio element.
-  </audio>
-  <div class="flex flex-col w-full">
-    <div class="flex">
-      <label for="timeRange" class="mr-2 text-sm font-medium text-gray-700 self-center">
-        {{ currentMusic.currentTime * 1000 | date: 'm:ss' }}/{{
-          currentMusic.duration * 1000 | date: 'm:ss'
-        }}
-      </label>
-      <mat-slider
-        min="0"
-        [max]="currentMusic.duration"
-        value-indicator-width="0"
-        style="width: 100%"
-      >
-        <input
-          matSliderThumb
-          [(ngModel)]="currentMusic.currentTime"
-          (input)="onInputTimeChange($event)"
-        />
-      </mat-slider>
-    </div>
-    <div class="flex flex-wrap justify-between">
-      <div class="flex" style="height: 44px">
-        <button
-          mat-mini-fab
-          (click)="togglePlay()"
-          [disabled]="!currentMusic.music.presignedUrl"
-          class="self-center"
-          style="height: 32px"
-        >
-          <mat-icon *ngIf="currentMusic.isPlaying">pause</mat-icon>
-          <mat-icon *ngIf="!currentMusic.isPlaying">play_arrow</mat-icon>
-        </button>
-      </div>
-      <div class="flex" style="height: 44px">
-        <div class="self-center">
-          <span class="text-sm text-nowrap font-medium text-gray-700">
-            {{ currentMusic.music.title }}
-          </span>
-        </div>
-      </div>
-      <div>
-        <label
-          for="volumeRange"
-          class="mr-2 text-sm text-nowrap font-medium text-gray-700 self-center"
-        >
-          Volume: {{ currentMusic.volume * 100 | number: '1.0-0' }}%
-        </label>
-        <mat-slider min="0" max="1" step="0.01" value="0.2" value-indicator-width="0">
-          <input
-            matSliderThumb
-            [(ngModel)]="currentMusic.volume"
-            (input)="onInputVolumeChange($event)"
-          />
-        </mat-slider>
-      </div>
-    </div>
-  </div>
+  <app-music-player [url]="currentMusic.presignedUrl" [title]="currentMusic.title" />
 </div>
 
 <div *ngIf="isLoading" class="mt-4 flex justify-center">
