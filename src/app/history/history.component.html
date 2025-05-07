@@ -2,7 +2,7 @@
   <app-music-player [url]="currentMusic?.presignedUrl" [title]="currentMusic?.title" />
 </div>
 
-<div class="h-[calc(100vh-5rem)] overflow-scroll mt-4">
+<div class="h-[calc(100vh-14rem)] overflow-y-scroll mt-4">
   <div *ngIf="isLoading" class="mt-4 flex justify-center">
     <mat-spinner></mat-spinner>
   </div>
