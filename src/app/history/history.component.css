@@ -1,0 +1,37 @@
+.history-card {
+  max-width: 400px;
+}
+
+.mat-mdc-card-outlined {
+  background-color: rgb(255, 255, 255);
+}
+
+.mat-mdc-card-header {
+  padding: 0 8px;
+}
+
+.mat-mdc-card-title {
+  color: rgb(133, 133, 133);
+  font-size: 1rem;
+}
+
+.mat-mdc-card-subtitle {
+  color: rgb(133, 133, 133);
+  font-size: 0.8rem;
+}
+
+.mat-mdc-card-content {
+  padding: 0;
+}
+
+.mat-mdc-card-content:last-child {
+  padding-bottom: 0;
+}
+
+.mat-mdc-card-lg-image {
+  opacity: 0.8;
+}
+
+.mat-mdc-card-lg-image:hover {
+  opacity: 1;
+}

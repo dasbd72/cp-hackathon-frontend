@@ -9,6 +9,10 @@ export const routes: Routes = [
     loadComponent: () => import('./home/home.component').then((m) => m.HomeComponent),
   },
   {
+    path: 'history',
+    loadComponent: () => import('./history/history.component').then((m) => m.HistoryComponent),
+  },
+  {
     path: 'music',
     loadComponent: () => import('./music/music.component').then((m) => m.MusicComponent),
   },
