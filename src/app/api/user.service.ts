@@ -70,6 +70,13 @@ export class UserService {
     );
   }
 
+  getUserSettingsByUserId(userId: string): Observable<UserSettings> {
+    return this.authService.authData$.pipe(
+      filter((authData) => authData.isAuthenticated && !!authData.userData),
+      switchMap((authData) => this.fetchUserSettings(userId)),
+    );
+  }
+
   private updateUserSettingsRequest(
     idToken: string,
     userSettings: UserSettings,

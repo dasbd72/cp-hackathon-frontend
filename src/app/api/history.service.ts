@@ -7,9 +7,12 @@ import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface History {
-  s3Key: string;
-  lastModified: string;
-  presignedUrl: string;
+  decoded: {
+    s3Key: string;
+    lastModified: string;
+    presignedUrl: string;
+  };
+  results: any;
 }
 
 @Injectable({
@@ -20,9 +23,12 @@ export class HistoryService {
 
   private extractHistoryListData(obj: any): History[] {
     return obj.data.history_list.map((item: any) => ({
-      s3Key: item.s3_key,
-      lastModified: item.last_modified,
-      presignedUrl: item.presigned_url,
+      decoded: {
+        s3Key: item.decoded.s3_key,
+        lastModified: item.decoded.last_modified,
+        presignedUrl: item.decoded.presigned_url,
+      },
+      results: item.results,
     }));
   }
 

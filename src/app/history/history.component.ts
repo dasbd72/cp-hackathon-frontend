@@ -8,9 +8,15 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { catchError, of, tap } from 'rxjs';
 
 import { History, HistoryService } from '../api/history.service';
+import { UserService } from '../api/user.service';
 
 interface HistoryElement {
   index: number;
+  date: string;
+  imageUrl: string;
+  userId?: string;
+  username?: string;
+  musicId?: string;
   history: History;
 }
 
@@ -24,7 +30,10 @@ export class HistoryComponent implements OnInit {
   isLoading = true;
   historyList: HistoryElement[] = [];
 
-  constructor(private historyService: HistoryService) {}
+  constructor(
+    private historyService: HistoryService,
+    private userService: UserService,
+  ) {}
 
   ngOnInit(): void {
     this.loadHistoryList();
@@ -42,12 +51,33 @@ export class HistoryComponent implements OnInit {
         tap((historyList) => {
           historyList = historyList || [];
           historyList.sort((a, b) => {
-            return new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime();
+            return a.decoded.s3Key > b.decoded.s3Key ? -1 : 1;
           });
           this.historyList = historyList.map((history, index) => ({
             index: index + 1,
+            date: history.decoded.lastModified,
+            imageUrl: history.decoded.presignedUrl,
+            userId: history.results.matched_role,
             history: history,
           }));
+          this.historyList.forEach((historyElement) => {
+            if (!historyElement.userId) {
+              return;
+            }
+            this.userService
+              .getUserSettingsByUserId(historyElement.userId)
+              .pipe(
+                tap((userSettings) => {
+                  historyElement.username = userSettings.username;
+                  historyElement.musicId = userSettings.musicId;
+                }),
+                catchError((error) => {
+                  console.error('Error fetching user settings:', error);
+                  return of(null);
+                }),
+              )
+              .subscribe();
+          });
           this.setLoading(false);
         }),
         catchError((error) => {
