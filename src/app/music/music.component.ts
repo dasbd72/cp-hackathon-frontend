@@ -15,6 +15,7 @@ import { AuthService } from '../auth/auth.service';
 
 interface MusicElement {
   music: Music;
+  isPlaying: boolean;
   duration: number;
   currentTime: number;
   volume: number;
@@ -44,6 +45,7 @@ export class MusicComponent implements AfterViewInit {
   extension = '';
   currentMusic: MusicElement = {
     music: { musicId: '', title: '', s3Key: '', presignedUrl: '' },
+    isPlaying: false,
     duration: 0,
     currentTime: 0,
     volume: 0.2,
@@ -75,6 +77,7 @@ export class MusicComponent implements AfterViewInit {
       return;
     }
     this.audioPlayer = this.audioPlayerRef?.nativeElement;
+    this.audioPlayer.volume = this.currentMusic.volume;
   }
 
   setLoading(loading: boolean) {
@@ -200,6 +203,7 @@ export class MusicComponent implements AfterViewInit {
     this.currentMusic = {
       ...this.currentMusic,
       duration: this.audioPlayer.duration,
+      isPlaying: true,
       currentTime: 0,
     };
   }
@@ -216,6 +220,7 @@ export class MusicComponent implements AfterViewInit {
     this.currentMusic = {
       ...this.currentMusic,
       music: music,
+      isPlaying: false,
       duration: 0,
       currentTime: 0,
     };
@@ -228,7 +233,6 @@ export class MusicComponent implements AfterViewInit {
     const value = event.target.value;
     this.audioPlayer.currentTime = value;
     this.currentMusic.currentTime = value;
-    this.audioPlayer.play();
   }
 
   onInputVolumeChange(event: any) {
@@ -239,8 +243,10 @@ export class MusicComponent implements AfterViewInit {
 
   togglePlay() {
     if (this.audioPlayer.paused) {
+      this.currentMusic.isPlaying = true;
       this.audioPlayer.play();
     } else {
+      this.currentMusic.isPlaying = false;
       this.audioPlayer.pause();
     }
   }
