@@ -136,7 +136,7 @@ export class SettingsComponent implements OnInit {
         filter((authData) => authData.isAuthenticated),
         switchMap(() => this.userService.uploadHeadshot(this.headshotBase64!)), // Pass headshotBase64
         tap(() => {
-          this.setLoadingUserSettings(false);
+          this.loadHeadshot(); // Reload headshot after upload
           console.log('Headshot uploaded successfully!');
         }),
         catchError((error) => {
