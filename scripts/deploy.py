@@ -2,10 +2,10 @@ import subprocess
 
 from .utils import get_boto3_session, read_confirm_config
 
-CONFIG_PATH = "scripts/config.json"
-
 
 class Creator:
+    """Builds and deploys the frontend code to S3 bucket."""
+
     def __init__(self, config_path="scripts/config.json"):
         self.config = read_confirm_config(config_path)
         if self.config is None:

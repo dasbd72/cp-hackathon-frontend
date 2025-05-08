@@ -1,9 +1,9 @@
 from .utils import get_boto3_session, read_confirm_config
 
-CONFIG_PATH = "scripts/config.json"
-
 
 class Creator:
+    """Creates frontend API proxy for https requests to S3 bucket."""
+
     def __init__(self, config_path="scripts/config.json"):
         self.config = read_confirm_config(config_path)
         if self.config is None:
@@ -109,6 +109,37 @@ class Creator:
             integration_id = response["IntegrationId"]
         return integration_id
 
+    def create_stage(self, api_id, stage_name):
+        # Search for existing stages
+        responses = self.apigateway.get_stages(
+            ApiId=api_id,
+        )
+        stage_exists = False
+        for stage in responses["Items"]:
+            if stage["StageName"] == stage_name:
+                if stage_exists:
+                    print(
+                        f"Stage with name {stage_name} already exists, deleting."
+                    )
+                    self.apigateway.delete_stage(
+                        ApiId=api_id,
+                        StageName=stage["StageName"],
+                    )
+                else:
+                    stage_exists = True
+        # Create a new stage if not found
+        if not stage_exists:
+            # Create a new stage
+            print(
+                f"Stage with name {stage_name} not found, creating a new one."
+            )
+            self.apigateway.create_stage(
+                ApiId=api_id,
+                StageName=stage_name,
+                AutoDeploy=True,
+            )
+        return stage_name
+
     def run(self):
         frontend_api = self.create_api()
         print(f"API ID: {frontend_api}")
@@ -127,6 +158,12 @@ class Creator:
             frontend_api, "ANY /{key}", integration_id=integration_id
         )
         print(f"Key Route ID: {key_route_id}")
+
+        stage_id = self.create_stage(
+            frontend_api,
+            stage_name="$default",
+        )
+        print(f"Stage ID: {stage_id}")
 
         invoke_url = self.apigateway.get_api(
             ApiId=frontend_api,

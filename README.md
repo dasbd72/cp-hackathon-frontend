@@ -69,17 +69,19 @@ python -m scripts.update_config
 Create bucket for deployment, run:
 
 ```bash
-python -m scripts.create_bucket
+python -m scripts.create_s3
 ```
 
-Upload files to bucket, run:
+Create api for https, run:
 
 ```bash
-python -m scripts.upload_bucket
+python -m scripts.create_api
 ```
 
-Or, build + upload files to bucket, run:
+Remember to modify `src/environments/environment.ts` and `src/environments/environment.prod.ts` with your own values.
+
+Then to build + upload files to bucket, run:
 
 ```bash
-python -m scripts.script deploy
+python -m scripts.deploy
 ```
